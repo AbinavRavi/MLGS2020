@@ -45,14 +45,11 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int, loss_functi
         for x,y in tqdm(iter(train_loader), total=num_train_batches):
             ##########################################################
             # YOUR CODE HERE
-            if use_cuda: 
-                # Since use_cuda variable is not defined here or given as argument,
-                # Check if there is a better way to do this without changing code outside/ If it's even necessary 
-                x, y = x.cuda(), y.cuda()
-            loss, logits = loss_function(x, y, model, loss_args)
-            # acc = (TP+TN)/(TP+TN+FP+FN)
-            # acc = (logits.round()*y + (1-logits.round())(1-y))/batch_size
-            accuracy = torch.sum(2*logits.round().float()* y +torch.ones(y.size)-logits.round().float()-y)/batch_size
+            x, y = x.cpu(), y.cpu()
+            loss, logits = loss_function(x, y, model)
+            output = torch.argmax(logits, dim=1)
+            accuracy = torch.eq(output, y).float()
+            accuracy = torch.sum(accuracy)/y.size()[0]
             losses.append(loss)
             accuracies.append(accuracy)
             optimizer.zero_grad()
