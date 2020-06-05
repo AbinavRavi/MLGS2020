@@ -48,12 +48,10 @@ def lower_confidence_bound(num_class_A: int, num_samples: int, alpha: float) -> 
         The total number of samples from the bernoulli distribution.
     alpha: float
         The desired confidence level, e.g. 0.05.
-
     Returns
     -------
     lower_bound: float
         The lower bound on the probability of the event occuring in a Bernoulli distribution.
-
     """
     return proportion_confint(num_class_A, num_samples, alpha=2 * alpha, method="beta")[0]
 
@@ -90,9 +88,7 @@ class SmoothClassifier(nn.Module):
                                                                                                                float]:
         """
         Certify the input sample using randomized smoothing.
-
         Uses lower_confidence_bound to get a lower bound on p_A, the probability of the top class.
-
         Parameters
         ----------
         inputs: torch.Tensor of shape [1, C, N, N], where C is the number of channels and N is the image width/height.
@@ -105,7 +101,6 @@ class SmoothClassifier(nn.Module):
             The confidence level, e.g. 0.05 for an expected error rate of 5%.
         batch_size: int
            The batch size to use during the certification, i.e. how many noise samples to classify in parallel.
-
         Returns
         -------
         Tuple containing:
@@ -113,13 +108,16 @@ class SmoothClassifier(nn.Module):
                          because the desired confidence level could not be reached.
             * radius: float. The radius for which the prediction can be certified. Is zero in case the classifier
                       abstains.
-
         """
         self.base_classifier.eval()
 
         ##########################################################
         # YOUR CODE HERE
-        ...
+        prediction_counts = self._sample_noise_predictions(inputs, n0, batch_size)
+        top_class = torch.argmax(predictions)
+        
+        prediction_counts = self._sample_noise_predictions(inputs, num_samples, batch_size)
+        p_A_lower_bound = lower_confidence_bound(prediction_counts[top_class], num_samples, alpha)
         ##########################################################
 
         if p_A_lower_bound < 0.5:
@@ -127,17 +125,16 @@ class SmoothClassifier(nn.Module):
         else:
             ##########################################################
             # YOUR CODE HERE
-            ...
+            radius = self.sigma * norm.ppf(p_A_lower_bound)
+            
             ##########################################################
             return top_class, radius
 
     def predict(self, inputs: torch.tensor, num_samples: int, alpha: float, batch_size: int) -> int:
         """
         Predict a label for the input sample via the smooth classifier g(x).
-
         Uses the test binom_test(count1, count1+count2, p=0.5) > alpha to determine whether the top class is the winning
         class with at least the confidence level alpha.
-
         Parameters
         ----------
         inputs: torch.Tensor of shape [1, C, N, N], where C is the number of channels and N is the image width/height.
@@ -149,7 +146,6 @@ class SmoothClassifier(nn.Module):
             the expected error rate must not be larger than 5%.
         batch_size: int
             The batch si ze to use during the prediction, i.e. how many noise samples to classify in parallel.
-
         Returns
         -------
         int: the winning class or -1 in case the desired confidence level could not be reached.
@@ -164,9 +160,7 @@ class SmoothClassifier(nn.Module):
     def _sample_noise_predictions(self, inputs: torch.tensor, num_samples: int, batch_size: int) -> torch.Tensor:
         """
         Sample random noise perturbations for the input sample and count the predicted classes of the base classifier.
-
         Note: this function clamps the distorted samples in the valid range, i.e. [0,1].
-
         Parameters
         ----------
         inputs: torch.Tensor of shape [1, C, N, N], where C is the number of channels and N is the image width/height.
@@ -175,7 +169,6 @@ class SmoothClassifier(nn.Module):
             The number of samples to draw.
         batch_size: int
             The batch size to use during the prediction, i.e. how many noise samples to classify in parallel.
-
         Returns
         -------
         torch.Tensor of shape [K,], where K is the number of classes.
@@ -197,7 +190,6 @@ class SmoothClassifier(nn.Module):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
         Make a single prediction for the input batch using the base classifier and random Gaussian noise.
-
         Note: this function clamps the distorted samples in the valid range, i.e. [0,1].
         Parameters
         ----------

@@ -23,18 +23,26 @@ def fast_gradient_attack(logits: torch.Tensor, x: torch.Tensor, y: torch.Tensor,
          will have a L_1 norm of exactly epsilon (see argument: epsilon).
     loss_fn: function
         The loss function used to construct the attack. By default, this is simply the cross entropy loss.
-
     Returns
     -------
     torch.Tensor of shape [B, C, N, N]: the perturbed input samples.
-
     """
     norm = str(norm)
     assert norm in ["1", "2", "inf"]
 
     ##########################################################
     # YOUR CODE HERE
-    ...
+    loss = loss_fn(logits, y)
+    loss.backward()
+    x_grad = x.grad
+    if norm == "1":
+        normed_grad = torch.sign(x_grad)/torch.sign(x_grad).norm(1)
+    elif norm == "2":
+        normed_grad = torch.sign(x_grad)/torch.sign(x_grad).norm(2)
+    elif norm == "inf":
+        normed_grad = torch.sign(x_grad)
+    x_pert = x + epsilon*normed_grad
+    x_pert = torch.clamp(x_pert,0,1)
     ##########################################################
 
     return x_pert.detach()

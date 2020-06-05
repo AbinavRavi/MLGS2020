@@ -27,13 +27,11 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int, loss_functi
         Number of epochs to train for. Default: 1.
     loss_args: dict or None
         Additional arguments to be passed to the loss function.
-
     Returns
     -------
     Tuple containing
         * losses: List[float]. The losses obtained at each step.
         * accuracies: List[float]. The accuracies obtained at each step.
-
     """
     if loss_args is None:
         loss_args = {}
@@ -45,7 +43,16 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int, loss_functi
         for x,y in tqdm(iter(train_loader), total=num_train_batches):
             ##########################################################
             # YOUR CODE HERE
-            ...
+            x, y = x.cpu(), y.cpu()
+            loss, logits = loss_function(x, y, model)
+            output = torch.argmax(logits, dim=1)
+            accuracy = torch.eq(output, y).float()
+            accuracy = torch.sum(accuracy)/y.size()[0]
+            losses.append(loss)
+            accuracies.append(accuracy)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
             ##########################################################
     return losses, accuracies
 
@@ -123,7 +130,6 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
         The batch size to use during the certification, i.e. how many noise samples to classify in parallel.
     num_classes: int
         The number of classes.
-
     Returns
     -------
     Dict containing the following keys:
@@ -132,7 +138,6 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
         * false_predictions: int. The number of times the prediction could be certified but was not correct.
         * correct_certified: int. The number of times the prediction could be certified and was correct.
         * avg_radius: float. The average radius for which the predictions could be certified.
-
     """
     model = SmoothClassifier(base_classifier=base_classifier, sigma=sigma, num_classes=num_classes)
     test_loader = DataLoader(dataset, batch_size=1, shuffle=False)
