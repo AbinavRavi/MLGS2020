@@ -81,6 +81,15 @@ def predict_model(model: nn.Module, dataset: Dataset, batch_size: int, attack_fu
     for x, y in tqdm(iter(test_loader), total=num_batches):
         ##########################################################
         # YOUR CODE HERE
+        if attack_function is None:
+            predicted_value = torch.argmax(model(x), dim=1)
+            predictions.append(predicted_value)
+            targets.append(y)
+        else:
+            x_perturbed = attack_function(model(x), x, y, attack_args)
+            predicted_value = torch.argmax(model(x_perturbed), dim=1)
+            predictions.append(predicted_value)
+            targets.append(y)
         ...
         ##########################################################
     predictions = torch.cat(predictions)
