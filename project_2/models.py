@@ -190,6 +190,9 @@ class SmoothClassifier(nn.Module):
                 this_batch_size = min(num_remaining, batch_size)
                 ##########################################################
                 # YOUR CODE HERE
+                perturbed_votes = self.forward(inputs)
+                max_vote = torch.argmax(perturbed_votes)
+                class_counts[max_vote]+=1
                 ...
                 ##########################################################
         return class_counts
