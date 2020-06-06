@@ -45,6 +45,16 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int, loss_functi
         for x,y in tqdm(iter(train_loader), total=num_train_batches):
             ##########################################################
             # YOUR CODE HERE
+            x, y = x.cpu(), y.cpu()
+            loss, logits = loss_function(x, y, model)
+            output = torch.argmax(logits, dim=1)
+            accuracy = torch.eq(output, y).float()
+            accuracy = torch.sum(accuracy)/y.size()[0]
+            losses.append(loss)
+            accuracies.append(accuracy)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
             ...
             ##########################################################
     return losses, accuracies
@@ -81,6 +91,17 @@ def predict_model(model: nn.Module, dataset: Dataset, batch_size: int, attack_fu
     for x, y in tqdm(iter(test_loader), total=num_batches):
         ##########################################################
         # YOUR CODE HERE
+        x, y = x.to("cpu"), y.to("cpu")
+        x.requires_grad = True
+        if attack_function is None:
+            predicted_value = torch.argmax(model(x), dim=1)
+            predictions.append(predicted_value)
+            targets.append(y)
+        else:
+            x_perturbed = attack_function(model(x), x, y, attack_args['epsilon'], attack_args['norm'])
+            predicted_value = torch.argmax(model(x_perturbed), dim=1)
+            predictions.append(predicted_value)
+            targets.append(y)
         ...
         ##########################################################
     predictions = torch.cat(predictions)

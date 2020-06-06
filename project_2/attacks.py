@@ -34,6 +34,17 @@ def fast_gradient_attack(logits: torch.Tensor, x: torch.Tensor, y: torch.Tensor,
 
     ##########################################################
     # YOUR CODE HERE
+    loss = loss_fn(logits, y)
+    loss.backward()
+    x_grad = x.grad
+    if norm == "1":
+        normed_grad = torch.sign(x_grad)/torch.sign(x_grad).norm(1)
+    elif norm == "2":
+        normed_grad = torch.sign(x_grad)/torch.sign(x_grad).norm(2)
+    elif norm == "inf":
+        normed_grad = torch.sign(x_grad)
+    x_pert = x + epsilon*normed_grad
+    x_pert = torch.clamp(x_pert,0,1)
     ...
     ##########################################################
 
