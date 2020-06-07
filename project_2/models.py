@@ -153,6 +153,15 @@ class SmoothClassifier(nn.Module):
         class_counts = self._sample_noise_predictions(inputs, num_samples, batch_size).cpu()
         ##########################################################
         # YOUR CODE HERE
+        sorted_counts, indices = torch.sort(inputs, descending=False)
+        count_highest = sorted_counts[0]
+        count_2nd_highest = sorted_counts[1]
+
+        if binom_test(count_highest, count_highest + count_2nd_highest, p=0.05) > alpha:
+            return self.ABSTAIN
+        else:
+            return count_highest
+
         ##########################################################
 
     def _sample_noise_predictions(self, inputs: torch.tensor, num_samples: int, batch_size: int) -> torch.Tensor:
