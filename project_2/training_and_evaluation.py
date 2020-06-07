@@ -151,7 +151,6 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
     for x, y in tqdm(iter(test_loader), total=len(dataset)):
         ##########################################################
         # YOUR CODE HERE
-        #y_smoothed_predicted = SmoothClassifier.predict(x, num_samples_1, alpha, batch_size)
         y_smoothed_predicted, radius = model.certify(x, num_samples_1, num_samples_2, alpha, certification_batch_size)
         if y_smoothed_predicted == y:
             radii.append(radius)

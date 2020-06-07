@@ -114,10 +114,10 @@ class SmoothClassifier(nn.Module):
         ##########################################################
         # YOUR CODE HERE
         prediction_counts = self._sample_noise_predictions(inputs, n0, batch_size)
-        top_class = torch.argmax(prediction_counts)
+        top_class = torch.argmax(prediction_counts).item()
         
         prediction_counts = self._sample_noise_predictions(inputs, num_samples, batch_size)
-        p_A_lower_bound = lower_confidence_bound(prediction_counts[top_class], num_samples, alpha)
+        p_A_lower_bound = lower_confidence_bound(prediction_counts[top_class].item(), num_samples, alpha)
         ##########################################################
 
         if p_A_lower_bound < 0.5:
@@ -153,12 +153,12 @@ class SmoothClassifier(nn.Module):
         class_counts = self._sample_noise_predictions(inputs, num_samples, batch_size).cpu()
         ##########################################################
         # YOUR CODE HERE
-        sorted_counts, classes = torch.sort(inputs, descending=False)
+        sorted_counts, classes = torch.sort(class_counts, descending=False)
         count_highest = sorted_counts[0]
         class_highest = classes[0]
         count_2nd_highest = sorted_counts[1]
 
-        if binom_test(count_highest, count_highest + count_2nd_highest, p=0.05) > alpha:
+        if binom_test(count_highest, count_highest + count_2nd_highest, p=0.5) > alpha:
             return self.ABSTAIN
         else:
             return class_highest
@@ -194,7 +194,7 @@ class SmoothClassifier(nn.Module):
                 num_remaining -= this_batch_size
                 perturbed_votes = self.forward(inputs)
                 max_vote = torch.argmax(perturbed_votes)
-                class_counts[max_vote]+=1
+                class_counts[max_vote] += 1
                 ##########################################################
         return class_counts
 
