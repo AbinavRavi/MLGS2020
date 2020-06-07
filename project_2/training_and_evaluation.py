@@ -151,7 +151,7 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
         ##########################################################
         # YOUR CODE HERE
         #y_smoothed_predicted = SmoothClassifier.predict(x, num_samples_1, alpha, batch_size)
-        y_smoothed_predicted, radius = SmoothClassifier.certify(x, num_samples_2, alpha, batch_size)
+        y_smoothed_predicted, radius = SmoothClassifier.certify(x, num_samples_1, num_samples_2, alpha, certification_batch_size)
         if y_smoothed_predicted == y:
             radii.append(radius)
             correct_certified += 1
