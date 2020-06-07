@@ -95,10 +95,11 @@ def predict_model(model: nn.Module, dataset: Dataset, batch_size: int, attack_fu
             predictions.append(predicted_value)
             targets.append(y)
         else:
-            x_perturbed = attack_function(model(x), x, y, attack_args['epsilon'], attack_args['norm'])
+            x_perturbed = attack_function(model(x), x, y, **attack_args)
             predicted_value = torch.argmax(model(x_perturbed), dim=1)
             predictions.append(predicted_value)
-            targets.append(y)
+            targets.append(y)            
+            
         ##########################################################
     predictions = torch.cat(predictions)
     targets = torch.cat(targets)
@@ -151,7 +152,7 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
         ##########################################################
         # YOUR CODE HERE
         #y_smoothed_predicted = SmoothClassifier.predict(x, num_samples_1, alpha, batch_size)
-        y_smoothed_predicted, radius = SmoothClassifier.certify(x, num_samples_1, num_samples_2, alpha, certification_batch_size)
+        y_smoothed_predicted, radius = model.certify(x, num_samples_1, num_samples_2, alpha, certification_batch_size)
         if y_smoothed_predicted == y:
             radii.append(radius)
             correct_certified += 1
@@ -162,6 +163,6 @@ def evaluate_robustness_smoothing(base_classifier: nn.Module, sigma: float, data
             radii.append(0)
             false_predictions += 1
         ##########################################################
-    avg_radius = torch.tensor(radii).mean().item()
+    avg_radius = torch.tensor(radii, dtype=torch.float32).mean().item()
     return dict(abstains=abstains, false_predictions=false_predictions, correct_certified=correct_certified,
                 avg_radius=avg_radius)

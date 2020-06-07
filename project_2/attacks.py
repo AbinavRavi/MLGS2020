@@ -29,7 +29,7 @@ def fast_gradient_attack(logits: torch.Tensor, x: torch.Tensor, y: torch.Tensor,
     """
     norm = str(norm)
     assert norm in ["1", "2", "inf"]
-
+  
     ##########################################################
     # YOUR CODE HERE
     loss = loss_fn(logits, y)
