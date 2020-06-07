@@ -126,7 +126,6 @@ class SmoothClassifier(nn.Module):
             ##########################################################
             # YOUR CODE HERE
             radius = self.sigma * norm.ppf(p_A_lower_bound)
-            
             ##########################################################
             return top_class, radius
 
@@ -154,7 +153,6 @@ class SmoothClassifier(nn.Module):
         class_counts = self._sample_noise_predictions(inputs, num_samples, batch_size).cpu()
         ##########################################################
         # YOUR CODE HERE
-        ...
         ##########################################################
 
     def _sample_noise_predictions(self, inputs: torch.tensor, num_samples: int, batch_size: int) -> torch.Tensor:
@@ -183,7 +181,9 @@ class SmoothClassifier(nn.Module):
                 this_batch_size = min(num_remaining, batch_size)
                 ##########################################################
                 # YOUR CODE HERE
-                ...
+                perturbed_votes = self.forward(inputs)
+                max_vote = torch.argmax(perturbed_votes)
+                class_counts[max_vote]+=1
                 ##########################################################
         return class_counts
 
