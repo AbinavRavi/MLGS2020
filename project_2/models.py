@@ -119,7 +119,11 @@ class SmoothClassifier(nn.Module):
 
         ##########################################################
         # YOUR CODE HERE
-        ...
+        prediction_counts = self._sample_noise_predictions(inputs, n0, batch_size)
+        top_class = torch.argmax(predictions)
+        
+        prediction_counts = self._sample_noise_predictions(inputs, num_samples, batch_size)
+        p_A_lower_bound = lower_confidence_bound(prediction_counts[top_class], num_samples, alpha)
         ##########################################################
 
         if p_A_lower_bound < 0.5:
@@ -127,7 +131,8 @@ class SmoothClassifier(nn.Module):
         else:
             ##########################################################
             # YOUR CODE HERE
-            ...
+            radius = self.sigma * norm.ppf(p_A_lower_bound)
+            
             ##########################################################
             return top_class, radius
 

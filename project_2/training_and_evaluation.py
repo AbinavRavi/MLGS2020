@@ -45,10 +45,18 @@ def train_model(model: nn.Module, dataset: Dataset, batch_size: int, loss_functi
         for x,y in tqdm(iter(train_loader), total=num_train_batches):
             ##########################################################
             # YOUR CODE HERE
-            ...
+            x, y = x.cpu(), y.cpu()
+            loss, logits = loss_function(x, y, model)
+            output = torch.argmax(logits, dim=1)
+            accuracy = torch.eq(output, y).float()
+            accuracy = torch.sum(accuracy)/y.size()[0]
+            losses.append(loss)
+            accuracies.append(accuracy)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
             ##########################################################
     return losses, accuracies
-
 
 def predict_model(model: nn.Module, dataset: Dataset, batch_size: int, attack_function: Union[Callable, None] = None,
                   attack_args: Union[Callable, None] = None) -> float:
