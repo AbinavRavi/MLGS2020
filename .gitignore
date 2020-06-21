@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 project_2/.gitignore
+
+# local data files
+project_3/task03_data.npy
